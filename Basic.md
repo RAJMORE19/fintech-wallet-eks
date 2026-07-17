@@ -49,24 +49,7 @@ Why do we use AWS Load Balancer Controller?
 • Automatically updates load balancer configuration when Kubernetes resources change.
 • Eliminates manual load balancer management.
 
-Flow:
-
-User
-   │
-   ▼
-ALB / NLB
-   │
-   ▼
-AWS Load Balancer Controller
-   │
-   ▼
-Ingress / Service
-   │
-   ▼
-EKS Cluster
-   │
-   ▼
-Pods
+Flow:User -> ALB / NLB -> AWS Load Balancer Controller -> Ingress / Service -> EKS Cluster -> Pods
 
 Supported Kubernetes Resources
 
@@ -92,12 +75,32 @@ One-Line Memory Trick
 
 AWS Load Balancer Controller = Automatically connects Amazon EKS applications to AWS ALB/NLB.
 
+====================================================================== **Appliation load balancer ABL (Nginx ingress Contoller)** ==================================================================================
+
+Application Load Balancer (ALB) is an AWS Layer 7 (HTTP/HTTPS) Load Balancer that receives traffic from users.
+NGINX Ingress Controller is a Kubernetes controller that routes incoming traffic to the correct Kubernetes Service and Pods based on Ingress rules.
+
+Why do we use ALB + NGINX Ingress Controller?
+
+🌐 Exposes Kubernetes applications to the internet.
+⚖️ Distributes traffic across multiple Pods.
+🎯 Supports host-based and path-based routing.
+🔒 Enables HTTPS using SSL/TLS certificates.
+🔄 Routes traffic only to healthy Pods.
+🚀 Allows multiple applications to share a single Load Balancer.
+📈 Provides high availability and scalability.
+
+Flow: User -> Application Load Balancer (ALB) -> NGINX Ingress Controller -> Ingress -> Service -> Pods
+
+"Application Load Balancer receives HTTP/HTTPS traffic from users. NGINX Ingress Controller reads Kubernetes Ingress rules and routes the traffic to the correct Service and Pods. Together, they provide secure, scalable, and highly available traffic management for Kubernetes applications."
+
+One-Line Memory Trick
+
+ALB = Entry point from the Internet.
+NGINX Ingress Controller = Traffic router inside Kubernetes.
 
 
-
-
-
-
+====================================================================== **EKS** ==================================================================================
 
 
 
