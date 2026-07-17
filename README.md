@@ -1,3 +1,16 @@
+✅ Build Order
+1. architecture/
+2. terraform/
+3. microservices/
+4. helm/
+5. gitops/
+6. .github/workflows/
+7. docs/
+
+
+
+
+
 # 💳 Enterprise FinTech Wallet Platform on Amazon EKS
 
 > A production-grade, cloud-native FinTech Wallet Platform built on **Amazon EKS** using **Microservices, Terraform, GitOps, Kubernetes, and AWS Managed Services**. This project demonstrates how modern enterprises design, deploy, secure, and operate scalable financial applications on Kubernetes.
