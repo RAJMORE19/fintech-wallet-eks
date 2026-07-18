@@ -1,4 +1,4 @@
- resource "aws_vpc" "this" {
+resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   instance_tenancy     = "default"
   enable_dns_support   = true
@@ -24,9 +24,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 # ==========================================
-# Public Subnets
-# Creates one public subnet in each Availability Zone
-# Used for: ALB, NAT Gateway
+# Subnets Tier
 # ==========================================
 
 resource "aws_subnet" "public" {
@@ -38,21 +36,13 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-public-${count.index + 1}"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-
-    # Required by AWS Load Balancer Controller
+    Name                     = "${var.project_name}-${var.environment}-public-${count.index + 1}"
+    Environment              = var.environment
+    Project                  = var.project_name
+    ManagedBy                = "Terraform"
     "kubernetes.io/role/elb" = "1"
   }
 }
-
-# ==========================================
-# Private Subnets
-# Used for EKS worker nodes and applications
-# No direct internet access
-# ==========================================
 
 resource "aws_subnet" "private" {
   count = length(var.private_subnet_cidrs)
@@ -62,12 +52,133 @@ resource "aws_subnet" "private" {
   availability_zone = element(var.availability_zones, count.index)
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-private-${count.index + 1}"
+    Name                              = "${var.project_name}-${var.environment}-private-${count.index + 1}"
+    Environment                       = var.environment
+    Project                           = var.project_name
+    ManagedBy                         = "Terraform"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
+}
+
+resource "aws_subnet" "database" {
+  count = length(var.database_subnet_cidrs)
+
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = var.database_subnet_cidrs[count.index]
+  availability_zone = element(var.availability_zones, count.index)
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-database-${count.index + 1}"
     Environment = var.environment
     Project     = var.project_name
     ManagedBy   = "Terraform"
-
-    # Required for Kubernetes internal load balancers
-    "kubernetes.io/role/internal-elb" = "1"
   }
+}
+
+# ==========================================
+# NAT Gateway Tier
+# ==========================================
+
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-nat-eip"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_nat_gateway" "this" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+
+  depends_on = [
+    aws_internet_gateway.this
+  ]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-nat-gateway"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+# ==========================================
+# Route Tables & Routes Tier
+# ==========================================
+
+# Public Tier
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-public-rt"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_route" "public_internet_access" {
+  route_table_id         = aws_route_table.public.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.this.id
+}
+
+# Private Tier
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-private-rt"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_route" "private_internet_access" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.this.id
+}
+
+# Isolated Database Tier
+resource "aws_route_table" "database" {
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-database-rt"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+# ==========================================
+# Route Table Associations
+# ==========================================
+
+resource "aws_route_table_association" "public" {
+  count = length(var.public_subnet_cidrs)
+
+  subnet_id      = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private" {
+  count = length(var.private_subnet_cidrs)
+
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "database" {
+  count = length(var.database_subnet_cidrs)
+
+  subnet_id      = aws_subnet.database[count.index].id
+  route_table_id = aws_route_table.database.id
 }
