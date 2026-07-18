@@ -174,3 +174,49 @@ Public Subnet
  └── NAT Gateway
 => **Private Subnets**
    Private subnets have no direct internet access.Users on the internet cannot reach them. What lives here? EKS Worker Nodes Application Pods Backend Services
+=> **Database Subnets**
+   A dedicated subnet for databases.
+   What lives here? Amazon RDS Amazon Aurora Redis (often in dedicated private subnets)
+   No internet access. Only application servers can connect. Purpose: Keep databases isolated and secure.
+=> **Elastic IP (EIP)**
+   What is it? Normally, public IPs can change. An Elastic IP is a static public IP that stays the same.
+   Why? The NAT Gateway needs a permanent public IP. Elastic IP =>  NAT Gateway Purpose: Provide a fixed public IP for outbound internet traffic.
+=> **NAT Gateway** : The private server can go out, but no one can come in.
+   Private servers sometimes need internet access to: Download Docker images ,Install updates,Reach AWS APIs But they should not be reachable from the internet.
+   That's exactly what the NAT Gateway provides.
+   Private EC2 => NAT Gateway =>  Internet
+=> Route Tables : A route table decides where network traffic should go.
+=> Route Table Associations : Creating a route table alone does nothing. You must associate it with a subnet.
+   Without the association, the subnet won't use those routes.
+   Purpose: Connect each subnet to the correct routing rules.
+    VPC
+│
+├── Public Subnets
+│    └── ALB
+│
+├── Private Subnets
+│    └── EKS Nodes
+│        └── Pods
+│
+└── Database Subnets
+     └── Aurora + Redis
+---------------------------------------------------------------------
+                    Internet
+                        │
+                Internet Gateway
+                        │
+        ┌───────────────┴───────────────┐
+        │                               │
+   Public Subnets                  Private Subnets
+   ├── ALB                         ├── EKS Nodes
+   └── NAT Gateway                 ├── Wallet Service
+        │                          ├── Payment Service
+        │                          └── Notification Service
+        │
+   Elastic IP
+        │
+        ▼
+  Database Subnets
+  ├── Aurora PostgreSQL
+  └── Redis
+
