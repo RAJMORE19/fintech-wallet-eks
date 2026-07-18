@@ -7,6 +7,21 @@
 6. .github/workflows/
 7. docs/
 
+After that, we'll build in this order:
+✅ VPC (Terraform)
+✅ IAM
+✅ EKS
+✅ ECR
+✅ Aurora PostgreSQL
+✅ Redis
+✅ AWS Load Balancer Controller
+✅ NGINX Ingress
+✅ ArgoCD
+✅ Prometheus + Grafana
+✅ Microservices
+✅ Helm
+✅ GitHub Actions
+
 ###################### 💳 Enterprise FinTech Wallet Platform on Amazon EKS ###########################
 
 > A production-grade, cloud-native FinTech Wallet Platform built on **Amazon EKS** using **Microservices, Terraform, GitOps, Kubernetes, and AWS Managed Services**.
@@ -130,7 +145,32 @@ This repository is designed to demonstrate hands-on experience with production-g
 => **what is module** → A Terraform module lets me write infrastructure code once and reuse it multiple times with different configurations for Dev, Staging, and Production.
 => **versions.tf**    → is the file where I specify which Terraform version and provider versions, such as AWS, Azure, or GCP, my project should use.
 => **variables.tf**   → What input values the project needs.
+=> **main.tf**        → is the file where I write the actual infrastructure code, such as creating a VPC, EC2 instance, EKS cluster, or RDS database.
 
+=> **VPC**  
+   What is it? A VPC is your own private network inside AWS. Without a VPC, you can't create EC2, EKS, RDS, NAT Gateway, or Load Balancers.
+   Real-life example Imagine Amazon gives you an empty piece of land. That land is your VPC. Everything you build (servers, databases, Kubernetes) goes inside it.
+   AWS
+┌─────────────────────────────┐
+│           Your VPC          │
+│                             │
+│  EC2   EKS   RDS   ALB      │
+│                             │
+└─────────────────────────────┘
+        
+=> **Internet Gateway (IGW)**      Internet ==> IGW ==> VPC
+   The Internet Gateway connects your VPC to the public internet. Without it: No internet No website No downloads No SSH from your laptop
+   Real-life example Your company has walls all around it. Nobody can enter. The Internet Gateway is the main entrance gate.
 
-
-
+=> **Public Subnets** — Public Area
+   A public subnet is a subnet that has a route to the Internet Gateway, so resources like the Application Load Balancer, NAT Gateway,
+   and Bastion Host can communicate with the internet.
+ Internet
+   │
+IGW
+   │
+Public Subnet
+ ├── ALB
+ └── NAT Gateway
+=> **Private Subnets**
+   Private subnets have no direct internet access.Users on the internet cannot reach them. What lives here? EKS Worker Nodes Application Pods Backend Services
