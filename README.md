@@ -127,9 +127,9 @@ This repository is designed to demonstrate hands-on experience with production-g
 
 ###########################   * 🏗️ Infrastructure as Code (Terraform) ########################
 
-=> **What is module**
-   A Terraform module lets me write infrastructure code once and reuse it multiple times with different configurations for Dev, Staging, and Production.
-=> **versions.tf** is the file where I specify which Terraform version and provider versions, such as AWS, Azure, or GCP, my project should use.
+=> **what is module** → A Terraform module lets me write infrastructure code once and reuse it multiple times with different configurations for Dev, Staging, and Production.
+=> **versions.tf**    → is the file where I specify which Terraform version and provider versions, such as AWS, Azure, or GCP, my project should use.
+=> **variables.tf**   → What input values the project needs.
 
 
 
