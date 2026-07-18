@@ -223,3 +223,5 @@ Public Subnet
 => Create the first IAM user manually in AWS. You need it to authenticate Terraform.
    After the VPC is deployed, we'll write the Terraform IAM module to manage application roles (IRSA, EKS roles, etc.).
 
+
+
