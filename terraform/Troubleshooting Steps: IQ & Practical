@@ -1,1 +1,8 @@
 Hi
+==> Why terraform init? 
+terraform init = Prepare the workspace. Before Terraform can create AWS resources, it needs to:
+✅ Download the required providers (like AWS). ✅ Set up the backend (where state is stored). 
+✅ Download any referenced modules. ✅ Prepare the current directory so plan and apply can run.
+It does not create AWS resources.
+
+==> 
