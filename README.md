@@ -224,4 +224,56 @@ Public Subnet
    After the VPC is deployed, we'll write the Terraform IAM module to manage application roles (IRSA, EKS roles, etc.).
 
 
+======================================================================================
+**T2 mirco for local** 
+==> IAM user , git , terraform , aws configure
+c=clear
+echo "alias c='clear'" >> ~/.zshrc
+source ~/.zshrc
+
+1. Update
+sudo apt update && sudo apt upgrade -y
+2. Install Git
+sudo apt install git -y
+git --version
+3. Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo apt install unzip -y
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+4. Configure IAM User
+
+Create an IAM user in AWS with Programmatic Access (Access Key + Secret Key), then run:
+
+aws configure
+
+Enter:
+
+AWS Access Key ID:
+AWS Secret Access Key:
+Default region: ap-south-1
+Default output format: json
+
+Verify:
+
+aws sts get-caller-identity
+5. Install Terraform
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+gpg --dearmor | \
+sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg >/dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+sudo apt update
+sudo apt install terraform -y
+terraform -version
+6. Verify Everything
+git --version
+aws --version
+terraform -version
+aws sts get-caller-identity
+
+
 
