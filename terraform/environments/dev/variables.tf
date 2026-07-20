@@ -25,3 +25,8 @@ variable "private_subnet_cidrs" {
 variable "database_subnet_cidrs" {
   type = list(string)
 }
+
+variable "domain_name" {
+  type    = string
+  default = "example.com"
+}
