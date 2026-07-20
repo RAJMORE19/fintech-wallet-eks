@@ -29,6 +29,7 @@ module "eks" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
 
-  # Dependency Injection from IAM Output
-  cluster_role_arn   = module.iam.eks_cluster_role_arn
+  # Dependency Injection from IAM Output (Dono Roles Pass Kar Diye)
+  cluster_role_arn     = module.iam.eks_cluster_role_arn
+  worker_node_role_arn = module.iam.worker_node_role_arn
 }
