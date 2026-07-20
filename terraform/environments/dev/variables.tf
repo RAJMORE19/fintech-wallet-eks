@@ -1,37 +1,39 @@
 variable "project_name" {
-  type = string
+  description = "Project name"
+  type        = string
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
 }
 
 variable "vpc_cidr" {
-  type = string
+  description = "VPC CIDR Block"
+  type        = string
 }
 
 variable "availability_zones" {
-  type = list(string)
+  description = "Availability Zones"
+  type        = list(string)
 }
 
 variable "public_subnet_cidrs" {
-  type = list(string)
+  description = "Public Subnet CIDRs"
+  type        = list(string)
 }
 
 variable "private_subnet_cidrs" {
-  type = list(string)
+  description = "Private Subnet CIDRs"
+  type        = list(string)
 }
 
 variable "database_subnet_cidrs" {
-  type = list(string)
-}
-
-
-
-variable "project_name" {
-  type = string
-}
-
-variable "environment" {
-  type = string
+  description = "Database Subnet CIDRs"
+  type        = list(string)
 }
