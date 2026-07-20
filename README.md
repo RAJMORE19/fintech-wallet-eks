@@ -277,35 +277,4 @@ aws sts get-caller-identity
 
 
 ========================================================================
-terraform/environments/dev/main.tf = need to write
-module "vpc" {
-  source = "../../modules/vpc"
-
-  project_name          = var.project_name
-  environment           = var.environment
-  vpc_cidr              = var.vpc_cidr
-  availability_zones    = var.availability_zones
-  public_subnet_cidrs   = var.public_subnet_cidrs
-  private_subnet_cidrs  = var.private_subnet_cidrs
-  database_subnet_cidrs = var.database_subnet_cidrs
-}
-Why? Think of it like this:
-
-modules/vpc/main.tf       = Machine (knows how to build a VPC).
-environments/dev/main.tf  = Power switch (tells Terraform: "Use this machine now").
-Right now your power switch is OFF because environments/dev/main.tf is empty.
-
-So the flow should be:
-
-modules/vpc/main.tf
-        ↓
-environments/dev/main.tf  ← Calls the module
-        ↓
-terraform plan
-        ↓
-terraform apply
-        ↓
-AWS creates VPC, Subnets, IGW, NAT Gateway...
-
-This is the only change you need before continuing.
 
