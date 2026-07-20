@@ -25,3 +25,13 @@ variable "private_subnet_cidrs" {
 variable "database_subnet_cidrs" {
   type = list(string)
 }
+
+
+
+variable "project_name" {
+  type = string
+}
+
+variable "environment" {
+  type = string
+}
