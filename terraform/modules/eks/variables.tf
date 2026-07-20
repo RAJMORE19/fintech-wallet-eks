@@ -23,6 +23,11 @@ variable "cluster_role_arn" {
   type        = string
 }
 
+variable "worker_node_role_arn" {
+  description = "IAM Role ARN for the EKS Worker Node groups"
+  type        = string
+}
+
 variable "cluster_version" {
   description = "EKS Kubernetes version"
   type        = string
