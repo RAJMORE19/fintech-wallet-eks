@@ -1,3 +1,4 @@
+# 1. Network Foundation
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -10,9 +11,24 @@ module "vpc" {
   database_subnet_cidrs = var.database_subnet_cidrs
 }
 
+# 2. Security & Identity
 module "iam" {
-  source = "../../modules/iam"
+  source       = "../../modules/iam"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+# 3. Compute Infrastructure (EKS Control Plane & Nodes)
+module "eks" {
+  source = "../../modules/eks"
 
   project_name = var.project_name
   environment  = var.environment
+
+  # Dependency Injection from VPC Output
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+
+  # Dependency Injection from IAM Output
+  cluster_role_arn   = module.iam.eks_cluster_role_arn
 }
