@@ -9,3 +9,9 @@ module "vpc" {
   private_subnet_cidrs  = var.private_subnet_cidrs
   database_subnet_cidrs = var.database_subnet_cidrs
 }
+
+module "iam" {
+  source       = "../../modules/iam"
+  project_name = var.project_name
+  environment  = var.environment
+}
