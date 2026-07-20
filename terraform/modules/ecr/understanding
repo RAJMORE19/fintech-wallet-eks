@@ -1,1 +1,49 @@
+terraform/modules/ecr/
 
+├── versions.tf     → Which Terraform + AWS provider version we use
+├── variables.tf    → What input values ECR needs
+├── main.tf         → Actual ECR resources creation code
+└── outputs.tf      → Values we want to send back (ECR URLs)
+
+variables.tf
+      |
+      |  gives input
+      ↓
+main.tf
+      |
+      | creates AWS resources
+      ↓
+outputs.tf
+      |
+      | returns information
+      ↓
+EKS / GitHub Actions
+
+==> versions.tf  Why? Terraform needs to know: Which cloud provider? Which version?
+
+==> What does main.tf create?
+AWS ECR
+fintech-wallet-dev-gateway-service
+fintech-wallet-dev-wallet-service
+fintech-wallet-dev-payment-service
+fintech-wallet-dev-notification-service
+Developer
+
+   |
+   |
+Docker build
+
+   |
+   |
+
+GitHub Actions
+
+   |
+   |
+
+Amazon ECR   <---- Terraform creates this
+
+   |
+   |
+
+EKS Pods
