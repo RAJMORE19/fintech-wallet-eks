@@ -1,20 +1,12 @@
 Bro 🔥 if you already completed:
 
-✅ VPC
-✅ IAM
-✅ EKS
-
+✅ VPC ✅ IAM ✅ EKS
 then you finished the **AWS foundation layer**.
-
 Your next work should move in this exact production order:
 
 ```
-VPC ✅
-IAM ✅
-EKS ✅
-
+VPC ✅ IAM ✅ EKS ✅
 ↓ NEXT
-
 ECR
 ↓
 EKS Add-ons
