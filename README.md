@@ -692,3 +692,66 @@ Secrets Manager
 ```
 
 This sequence reflects a typical production deployment order: build the AWS foundation first, extend the EKS cluster with managed add-ons and IAM integration, connect to the cluster, install Kubernetes platform components, deploy applications, enable GitOps and CI/CD, and finally validate the complete platform.
+
+aws eks update-kubeconfig --region ap-south-1 --name fintech-wallet-dev-eks
+
+curl -LO "https://dl.k8s.io/release/v1.34.0/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+kubectl version --client
+
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+helm version
+kubectl get nodes
+aws eks describe-cluster \
+--name fintech-wallet-dev-eks \
+--region ap-south-1 \
+--query "cluster.identity.oidc.issuer" \
+--output text
+
+cd ~/fintech-wallet-eks/scripts/aws-load-balancer-controller
+curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.13.0/docs/install/iam_policy.json
+aws iam create-policy \
+--policy-name AWSLoadBalancerControllerIAMPolicy \
+--policy-document file://iam_policy.json
+eksctl version
+curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+eksctl utils associate-iam-oidc-provider \
+--region ap-south-1 \
+--cluster fintech-wallet-dev-eks \
+--approve
+
+eksctl create iamserviceaccount \
+--cluster fintech-wallet-dev-eks \
+--namespace kube-system \
+--name aws-load-balancer-controller \
+--attach-policy-arn arn:aws:iam::827565901533:policy/AWSLoadBalancerControllerIAMPolicy \
+--approve \
+--region ap-south-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
