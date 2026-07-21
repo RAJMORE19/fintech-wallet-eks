@@ -1,0 +1,12 @@
+image:
+  repository: rajmorework/fintech-gateway
+  tag: v1
+
+service:
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: alb
+  host: gateway.local
