@@ -732,22 +732,248 @@ eksctl create iamserviceaccount \
 --region ap-south-1
 
  
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+-n kube-system \
+--set clusterName=fintech-wallet-dev-eks \
+--set serviceAccount.create=false \
+--set serviceAccount.name=aws-load-balancer-controller \
+--set region=ap-south-1 \
+--set vpcId=$(aws eks describe-cluster --name fintech-wallet-dev-eks --region ap-south-1 --query "cluster.resourcesVpcConfig.vpcId" --output text)
+
+kubectl get pods -n kube-system | grep aws-load-balancer
+
+helm repo add external-secrets https://charts.external-secrets.io
+helm repo update
+kubectl get pods -n external-secrets
+
+helm install external-secrets external-secrets/external-secrets \
+-n external-secrets \
+--create-namespace
+
+helm install external-secrets external-secrets/external-secrets \
+-n external-secrets \
+--create-namespace
+
+kubectl get pods -n external-secrets
+
+kubectl create namespace argocd
+
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
+
+helm install argocd argo/argo-cd \
+-n argocd
+kubectl get pods -n argocd
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
 
 
 
+kubectl create namespace monitoring
+
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+-n monitoring
+
+kubectl get pods -n monitoring
+kubectl create namespace fintech 
 
 
+===========================================
+Phase 2 — Create First Microservice (Gateway)
+
+Creating first micro-service
+
+cd ~/fintech-wallet-eks && \
+mkdir -p microservices/gateway && \
+cat > microservices/gateway/app.py << 'EOF'
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return {'message': 'FinTech Gateway Running'}
+
+@app.route('/health')
+def health():
+    return {'status': 'ok'}
+
+app.run(host='0.0.0.0', port=8080)
+EOF
+
+cat > microservices/gateway/requirements.txt << 'EOF'
+flask
+EOF
+
+cat > microservices/gateway/Dockerfile << 'EOF'
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+
+EXPOSE 8080
+
+CMD ["python", "app.py"]
+EOF
+
+echo "✅ Gateway microservice created successfully!"
+tree microservices/gateway
 
 
+======================================
+
+sudo apt update
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+newgrp docker
+docker --version
+
+docker login
+cd ~/fintech-wallet-eks/microservices/gateway
+docker build -t YOUR_DOCKERHUB_USERNAME/fintech-gateway:v1 .
+docker push YOUR_DOCKERHUB_USERNAME/fintech-gateway:v1
 
 
+==================================
 
+Phase 4 — Helm Chart
+Task 6 — Create chart
+cd ~/fintech-wallet-eks/helm
+helm create gateway
 
+Remove default templates and create these files:
 
+helm/gateway/templates/
+├── deployment.yaml
+├── service.yaml
+└── ingress.yaml
+Task 7 — values.yaml
+image:
+  repository: YOUR_DOCKERHUB_USERNAME/fintech-gateway
+  tag: v1
 
+Phase 4 — Helm Chart
+Task 6 — Create chart
+cd ~/fintech-wallet-eks/helm
+helm create gateway
 
+Remove default templates and create these files:
 
+helm/gateway/templates/
+├── deployment.yaml
+├── service.yaml
+└── ingress.yaml
+Task 7 — values.yaml
+image:
+  repository: YOUR_DOCKERHUB_USERNAME/fintech-gateway
+  tag: v1
 
+service:
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: alb
+  host: gateway.local
+Phase 5 — Kubernetes Manifests
+Task 8 — deployment.yaml
+
+Use:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: fintech
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - name: gateway
+        image: YOUR_DOCKERHUB_USERNAME/fintech-gateway:v1
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+Task 9 — service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: fintech
+spec:
+  selector:
+    app: gateway
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+Task 10 — ingress.yaml (ALB)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway
+  namespace: fintech
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: gateway
+            port:
+              number: 80
+
+        1. Create the GitOps folder
+mkdir -p ~/fintech-wallet-eks/gitops/applications/gateway
+2. Copy the manifests
+cp ~/fintech-wallet-eks/helm/gateway/templates/deployment.yaml \
+   ~/fintech-wallet-eks/gitops/applications/gateway/
+
+cp ~/fintech-wallet-eks/helm/gateway/templates/service.yaml \
+   ~/fintech-wallet-eks/gitops/applications/gateway/
+
+cp ~/fintech-wallet-eks/helm/gateway/templates/ingress.yaml \
+   ~/fintech-wallet-eks/gitops/applications/gateway/
+3. Verify
+tree ~/fintech-wallet-eks/gitops/applications/gateway
+
+Expected output:
+
+gateway/
+├── deployment.yaml
+├── ingress.yaml
+└── service.yaml
 
 
 
