@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wallet
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/RAJMORE19/fintech-wallet-eks.git
+    targetRevision: main
+    path: gitops/applications/wallet
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: fintech
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet
+  namespace: fintech
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wallet
+  template:
+    metadata:
+      labels:
+        app: wallet
+    spec:
+      containers:
+      - name: wallet
+        image: rajmorework/fintech-wallet:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
