@@ -75,29 +75,29 @@ module "redis" {
 }
 
 # 7. DNS (Route53)
-module "route53" {
-  source = "../../modules/route53"
-
-  domain_name = var.domain_name
-  environment = var.environment
-}
+#module "route53" {
+#  source = "../../modules/route53"
+#
+#  domain_name = var.domain_name
+#  environment = var.environment
+#}
 
 # 8. SSL Certificate (ACM)
-module "acm" {
-  source = "../../modules/acm"
-
-  domain_name = var.domain_name
-  zone_id     = module.route53.zone_id
-}
+#module "acm" {
+#  source = "../../modules/acm"
+#
+#  domain_name = var.domain_name
+#  zone_id     = module.route53.zone_id
+#}
 
 # 9. Application Load Balancer
-module "alb" {
-  source = "../../modules/alb"
-
-  project_name = var.project_name
-  environment  = var.environment
-
-  vpc_id            = module.vpc.vpc_id
-  public_subnet_ids = module.vpc.public_subnet_ids
-  certificate_arn   = module.acm.certificate_arn
-}
+#module "alb" {
+#  source = "../../modules/alb"
+#
+#  project_name = var.project_name
+#  environment  = var.environment
+#
+#  vpc_id            = module.vpc.vpc_id
+#  public_subnet_ids = module.vpc.public_subnet_ids
+#  certificate_arn   = module.acm.certificate_arn
+#}
